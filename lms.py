@@ -64,50 +64,143 @@ class Member:
                 print(f"  - {b.title} by {b.author}")
 
 
+class Library:
+    def __init__(self):
+        self.books = []
+        self.members = []
+
+    def add_book(self, book_id, title, author, total_copies):
+        for b in self.books:
+            if b.id == book_id:
+                print("Error: Book ID already exists.")
+                return
+        book = Book(book_id, title, author, total_copies)
+        self.books.append(book)
+        print(f"Book '{title}' added successfully!")
+
+    def add_member(self, member_id, name, email):
+        for m in self.members:
+            if m.id == member_id:
+                print("Error: Member ID already exists.")
+                return
+        member = Member(member_id, name, email)
+        self.members.append(member)
+        print(f"Member '{name}' registered successfully!")
+
+    def find_book(self, book_id):
+        for b in self.books:
+            if b.id == book_id:
+                return b
+        return None
+
+    def find_member(self, member_id):
+        for m in self.members:
+            if m.id == member_id:
+                return m
+        return None
+
+    def borrow_book(self, member_id, book_id):
+        member = self.find_member(member_id)
+        book = self.find_book(book_id)
+        if not member:
+            print("Error: Member not found!")
+            return False
+        if not book:
+            print("Error: Book not found!")
+            return False
+        return member.borrow_book(book)
+
+    def return_book(self, member_id, book_id):
+        member = self.find_member(member_id)
+        book = self.find_book(book_id)
+        if not member or not book:
+            print("Error: Member or book not found!")
+            return False
+        return member.return_book(book)
+
+    def display_available_books(self):
+        print("\n=== Available Books ===")
+        for b in self.books:
+            if b.available_copies > 0:
+                print(f"{b.title} by {b.author} - {b.available_copies} copies available")
+
+    def display_member_books(self, member_id):
+        member = self.find_member(member_id)
+        if not member:
+            print("Error: Member not found!")
+            return
+        member.display_borrowed_books()
+
+
 if __name__ == "__main__":
     print("=" * 60)
-    print("TESTING BOOK AND MEMBER CLASSES")
+    print("TESTING FULL LIBRARY SYSTEM (BOOK + MEMBER + LIBRARY)")
     print("=" * 60)
 
-    book1 = Book(1, "Python Crash Course", "Eric Matthes", 3)
-    book2 = Book(2, "Clean Code", "Robert Martin", 2)
-    book3 = Book(3, "The Pragmatic Programmer", "Hunt & Thomas", 1)
+    library = Library()
 
-    member1 = Member(101, "Alice Smith", "alice@email.com")
-    member2 = Member(102, "Bob Jones", "bob@email.com")
+    print("\n--- Adding Books ---")
+    library.add_book(1, "Python Crash Course", "Eric Matthes", 3)
+    library.add_book(2, "Clean Code", "Robert Martin", 2)
+    library.add_book(3, "The Pragmatic Programmer", "Hunt & Thomas", 1)
+    library.add_book(4, "Design Patterns", "Gang of Four", 2)
 
-    print("\n--- Display Initial Books ---")
-    book1.display_info()
-    book2.display_info()
-    book3.display_info()
+    print("\n--- Adding Members ---")
+    library.add_member(101, "Alice Smith", "alice@email.com")
+    library.add_member(102, "Bob Jones", "bob@email.com")
+    library.add_member(103, "Carol White", "carol@email.com")
+
+    print("\n--- Display Available Books ---")
+    library.display_available_books()
 
     print("\n--- Borrowing Books ---")
-    member1.borrow_book(book1)
-    member1.borrow_book(book2)
-    member2.borrow_book(book1)
-    member1.display_borrowed_books()
-    member2.display_borrowed_books()
+    library.borrow_book(101, 1)
+    library.borrow_book(101, 2)
+    library.borrow_book(102, 1)
 
-    print("\n--- Borrowing Limit Test ---")
-    member1.borrow_book(book3)
-    extra_book = Book(4, "Design Patterns", "Gang of Four", 1)
-    member1.borrow_book(extra_book)
+    print("\n--- Display Member Books ---")
+    library.display_member_books(101)
+    library.display_member_books(102)
+    library.display_member_books(103)
+
+    print("\n--- Display Available Books After Borrowing ---")
+    library.display_available_books()
+
+    print("\n--- Borrowing Last Copy ---")
+    library.borrow_book(103, 3)
+    library.display_available_books()
+
+    print("\n--- Attempting to Borrow Unavailable Book ---")
+    library.borrow_book(102, 3)
+
+    print("\n--- Testing Borrowing Limit ---")
+    library.borrow_book(101, 4)
+    library.display_member_books(101)
+    library.borrow_book(101, 3)
 
     print("\n--- Returning Books ---")
-    member1.return_book(book1)
-    member2.return_book(book1)
-    member1.display_borrowed_books()
-    member2.display_borrowed_books()
+    library.return_book(101, 1)
+    library.return_book(102, 1)
+    library.display_member_books(101)
+    library.display_available_books()
 
-    print("\n--- Invalid Return ---")
-    member2.return_book(book2)
+    print("\n--- Attempting Invalid Return ---")
+    library.return_book(102, 2)
 
-    print("\n--- Final Status ---")
-    book1.display_info()
-    book2.display_info()
-    book3.display_info()
-    extra_book.display_info()
+    print("\n--- Return and Re-borrow ---")
+    library.return_book(103, 3)
+    library.borrow_book(102, 3)
+    library.display_member_books(102)
+
+    print("\n--- Error Handling ---")
+    library.borrow_book(999, 1)
+    library.borrow_book(101, 999)
+    library.return_book(999, 1)
+    library.display_member_books(999)
+
+    print("\n--- Final Available Books ---")
+    library.display_available_books()
 
     print("\n" + "=" * 60)
-    print("MEMBER CLASS TEST COMPLETE")
+    print("LIBRARY CLASS TEST COMPLETE")
     print("=" * 60)
